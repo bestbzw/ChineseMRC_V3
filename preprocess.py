@@ -91,9 +91,9 @@ def _is_whitespace(c):
         return True
     return False
 
-def get_query_keywords_type(keywords,query,tokenizer):
+def get_query_keywords_type(keywords,query,max_length,tokenizer):
     
-    query_words = tokenizer.tokenize(query)
+    query_words = tokenizer.tokenize(query)[:max_length]
     _type = [0] * len(query_words)
     length = 0
     indexs = []
@@ -110,8 +110,16 @@ def get_query_keywords_type(keywords,query,tokenizer):
         length += len(token)
     
     for index in indexs:
-        _type[query_ori_token_map[index]] = 1
-               
+        try:
+            _type[query_ori_token_map[index]] = 1
+        except:
+            # logging.info(str(keywords))
+            #logging.info(str(query))
+            #logging.info(str(len(query)))
+            #logging.info(str(query_words))
+            #logging.info(str(indexs))
+            #raise
+            pass
     return _type
 
 def get_context_keywords_type(keywords,context):
@@ -181,8 +189,8 @@ def lic2020_convert_example_to_features(example, max_seq_length, doc_stride, max
 
     span_doc_tokens = all_doc_tokens
     
-    query_keyword_type_ids = get_query_keywords_type(example.keywords,example.question_text[:max_query_length],tokenizer)
-   
+    query_keyword_type_ids = get_query_keywords_type(example.keywords,example.question_text,max_query_length,tokenizer)
+
     assert len(query_keyword_type_ids) == len(truncated_query)
     
     while len(spans) * doc_stride < len(all_doc_tokens):
